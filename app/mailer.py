@@ -1,10 +1,13 @@
+import datetime
+
 import os
 import smtplib
 import ssl
-import time
 
 from email.message import EmailMessage
 from dotenv import load_dotenv
+
+from scraper import main as _scraper
 
 load_dotenv()
 
@@ -14,16 +17,12 @@ SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL')
 PASSWORD = os.getenv('PASSWORD')
 
+LINKS = _scraper()
 
-def main(content):
-    """
-    Send email
-    """
-    header, url, body = content
-    send_email(header, url, body)
+START_DATE = datetime.date(2020, 2, 28)
 
 
-def send_email(header, url, body):
+def send_email(content):
     """
     Set up ssl context, login and send email to receiver
 
@@ -31,6 +30,8 @@ def send_email(header, url, body):
     :Param url: The resource's url
     :Param body: The body of the email
     """
+    header, url, body = content
+
     msg = EmailMessage()
     msg['Subject'] = header
     msg['From'] = SENDER_EMAIL
@@ -61,3 +62,11 @@ def send_email(header, url, body):
         server.login(SENDER_EMAIL, PASSWORD)
         server.send_message(msg)
 
+
+if __name__ == "__main__":
+    today = datetime.datetime.today().date()
+    diff = (today - START_DATE).days
+    try:
+        send_email(LINKS[diff])
+    except IndexError:
+        pass
