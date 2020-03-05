@@ -1,17 +1,21 @@
 import datetime
+
 import os
+import smtplib
+import ssl
 
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
-
+from email.message import EmailMessage
 from dotenv import load_dotenv
 
 from scraper import main as _scraper
 
 load_dotenv()
 
+PORT = 465
+SMTP_SERVER = "smtp.gmail.com"
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL')
+PASSWORD = os.getenv('PASSWORD')
 
 LINKS = _scraper()
 
@@ -20,7 +24,7 @@ START_DATE = datetime.date(2020, 2, 28)
 
 def send_email(content):
     """
-    Set up sendgrid and send email to receiver
+    Set up ssl context, login and send email to receiver
 
     :Param header: The subject of the email
     :Param url: The resource's url
@@ -28,7 +32,19 @@ def send_email(content):
     """
     header, url, body = content
 
-    content = f"""\
+    msg = EmailMessage()
+    msg['Subject'] = header
+    msg['From'] = SENDER_EMAIL
+    msg['To'] = RECEIVER_EMAIL
+
+    msg.set_content(f"""\
+        Hi there!
+
+        Here's your Python Language Reference chapter for the day: {url}
+        """
+    )
+
+    msg.add_alternative(f"""\
         Hi there!
 
         <p>
@@ -38,22 +54,14 @@ def send_email(content):
         </p>
 
         {body}
-        """
-
-    message = Mail(
-        from_email=SENDER_EMAIL,
-        to_emails=RECEIVER_EMAIL,
-        subject=header,
-        html_content=content
+        """, subtype='html'
     )
 
-    try:
-        sendgrid = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-        response = sendgrid.send(message)
-        assert response.status_code == 202 or response.status_code == 200, \
-            "Message was not sent successfully"
-    except Exception as e:
-        raise e
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL(SMTP_SERVER, PORT, context=context) as server:
+        server.login(SENDER_EMAIL, PASSWORD)
+        server.send_message(msg)
+
 
 if __name__ == "__main__":
     today = datetime.datetime.today().date()
