@@ -6,16 +6,14 @@ from sendgrid.helpers.mail import Mail
 
 from dotenv import load_dotenv
 
-from scraper import main as _scraper
+from scraper import main as _scrape_link
 
 load_dotenv()
 
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL')
 
-LINKS = _scraper()
-
-START_DATE = datetime.date(2020, 2, 28)
+START_DATE = datetime.date(2020, 3, 6)
 
 
 def send_email(content):
@@ -58,7 +56,8 @@ def send_email(content):
 if __name__ == "__main__":
     today = datetime.datetime.today().date()
     diff = (today - START_DATE).days
+    link = _scrape_link(diff)
     try:
-        send_email(LINKS[diff])
+        send_email(link)
     except IndexError:
         pass

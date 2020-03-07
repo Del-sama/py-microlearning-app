@@ -7,10 +7,11 @@ from bs4 import BeautifulSoup
 BASE_URL = 'https://docs.python.org/3/reference/'
 
 
-def main():
+def main(idx):
     """
     Scrape base url and extract links
 
+    :Param idx: index of link to parsed
     :Return: parsed content
     """
     content = _scraper(BASE_URL)
@@ -21,8 +22,8 @@ def main():
     end = -14
     links = links[start:end]
 
-    result = _handle_links(links)
-    return list(result)
+    result = _handle_link(links[idx])
+    return result
 
 
 def _has_no_hashtag(href):
@@ -36,27 +37,26 @@ def _has_no_hashtag(href):
     return href and not re.compile("#").search(href)
 
 
-def _handle_links(links):
+def _handle_link(link):
     """
-    Scrape and parse links
+    Scrape and parse link
 
-    :Param links: links to be parsed
+    :Param link: link to be parsed
     :Return: tuple of (header, url, body)
     """
-    for link in links:
-        url = f"{BASE_URL}{link.get('href')}"
-        content = _scraper(url)
+    url = f"{BASE_URL}{link.get('href')}"
+    content = _scraper(url)
 
-        permalink = content.findChildren("a", {"class": "headerlink"})
-        _decompose(permalink)
+    permalink = content.findChildren("a", {"class": "headerlink"})
+    _decompose(permalink)
 
-        header = content.find('h1').text.lstrip('0123456789. ')
-        body = content.find("div", {"class": "document"})
+    header = content.find('h1').text.lstrip('0123456789. ')
+    body = content.find("div", {"class": "document"})
 
-        sphinxsidebar = body.findChild("div", {"class": "sphinxsidebar"})
-        _decompose([sphinxsidebar])
+    sphinxsidebar = body.findChild("div", {"class": "sphinxsidebar"})
+    _decompose([sphinxsidebar])
 
-        yield header, url, body
+    return header, url, body
 
 
 def _scraper(url):
