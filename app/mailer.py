@@ -20,9 +20,7 @@ def send_email(content):
     """
     Set up sendgrid and send email to receiver
 
-    :Param header: The subject of the email
-    :Param url: The resource's url
-    :Param body: The body of the email
+    :Param content: Tuple of (header, url, body)
     """
     header, url, body = content
 
@@ -60,4 +58,6 @@ if __name__ == "__main__":
     try:
         send_email(link)
     except IndexError:
+        # The App stops sending emails once we’ve run through
+        # the 10 chapters of the documentation
         pass
