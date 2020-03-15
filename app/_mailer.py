@@ -7,7 +7,7 @@ import ssl
 from email.message import EmailMessage
 from dotenv import load_dotenv
 
-from scraper import main as _scraper
+from scraper import main as _scrape_link
 
 load_dotenv()
 
@@ -17,18 +17,14 @@ SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 RECEIVER_EMAIL = os.getenv('RECEIVER_EMAIL')
 PASSWORD = os.getenv('PASSWORD')
 
-LINKS = _scraper()
-
 START_DATE = datetime.date(2020, 2, 28)
 
 
 def send_email(content):
     """
-    Set up ssl context, login and send email to receiver
+    Set up sendgrid and send email to receiver
 
-    :Param header: The subject of the email
-    :Param url: The resource's url
-    :Param body: The body of the email
+    :Param content: Tuple of (header, url, body)
     """
     header, url, body = content
 
@@ -66,7 +62,8 @@ def send_email(content):
 if __name__ == "__main__":
     today = datetime.datetime.today().date()
     diff = (today - START_DATE).days
+    link = _scrape_link(diff)
     try:
-        send_email(LINKS[diff])
+        send_email(link)
     except IndexError:
         pass
