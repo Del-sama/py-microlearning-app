@@ -22,7 +22,7 @@ START_DATE = datetime.date(2020, 2, 28)
 
 def send_email(content):
     """
-    Set up sendgrid and send email to receiver
+    send email to receiver
 
     :Param content: Tuple of (header, url, body)
     """
