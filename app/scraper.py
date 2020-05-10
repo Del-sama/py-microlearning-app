@@ -9,7 +9,7 @@ BASE_URL = 'https://docs.python.org/3/reference/'
 
 def main(idx):
     """
-    Scrape base url and extract links
+    Scrape base url, extract links and save to db
 
     :Param idx: index of link to parsed
     :Return: parsed content
@@ -51,12 +51,15 @@ def _handle_link(link):
     _decompose(permalink)
 
     header = content.find('h1').text.lstrip('0123456789. ')
-    body = content.find("div", {"class": "document"})
+    body = content.find("div", {"class": "section"})
 
-    sphinxsidebar = body.findChild("div", {"class": "sphinxsidebar"})
-    _decompose([sphinxsidebar])
+    # Find sub-sections in each page
+    sections = body.findChildren("div", {"class": "section"})
 
-    return header, url, body
+    # Split each page into its major sub-headings.
+    split_body = [item for item in sections if len(item.findAll("h2")) != 0]
+
+    return header, url, split_body
 
 
 def _scraper(url):
